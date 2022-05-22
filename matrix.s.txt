@@ -1,0 +1,107 @@
+
+	AREA	program, CODE, READONLY
+matrix_mul
+	EXPORT	matrix_mul
+
+    ; Please write your code below that will implement:
+    ; int matrix_mul(Matrix *results, const Matrix *source1, const Matrix *source2);
+	
+	push	{r3-r10,lr}
+
+	mov	r3,#0
+	mov	r4,#0
+	mov	r5,#0
+	mov	r6,#0
+	mov	r7,#0
+	mov	r8,#0
+	mov	r9,#0
+	mov	r10,#0
+	;r7 store i,r8 store j,r9 store k,r10 store x;
+	
+	ldr	r3,[r1,#4]
+	ldr	r4,[r2,#0]
+	cmp	r3,r4
+	bne	finish1
+	;when source1->row!=source2->column,jump to finish1;
+	
+loop1
+	ldr	r3,[r1,#0]
+	cmp	r7,r3
+	;when i>=source1->row,jump to finish2,or continue to loop2;
+	bge	finish2
+
+loop2
+	ldr	r3,[r2,#4]
+	cmp	r8,r3
+	;when j>=source1->row,jump to loop1 left,or continue to loop3;
+	bge	loop1left
+
+loop3
+	ldr	r3,[r1,#4]
+	cmp	r9,r3
+	;when j>=source1->row,jump to loop2 left,or continue;
+	bge	loop2left
+	
+	ldr	r3,[r1,#4]
+	ldr	r4,[r1,#8]
+	mul	r6,r7,r3
+	add	r6,r6,r9
+	mov	r3,#4
+	mul	r6,r6,r3
+	add	r4,r4,r6
+	ldr	r4,[r4]
+	;get source1[i][k] to r4;
+	
+	ldr	r3,[r2,#4]
+	ldr	r5,[r2,#8]
+	mul	r6,r9,r3
+	add	r6,r6,r8
+	mov	r3,#4
+	mul	r6,r6,r3
+	add	r5,r5,r6
+	ldr	r5,[r5]
+	;get source2[k][j] to r5;
+
+	mul	r3,r4,r5
+	add	r10,r10,r3
+	add	r9,r9,#1
+	;add source1[i][k](r4)*source2[k][j](r5) to x(r10) and add 1 to k(r9);
+	b	loop3
+	
+loop2left
+	ldr	r3,[r0,#4]
+	ldr	r4,[r0,#8]
+	mul	r6,r7,r3
+	add	r6,r6,r8
+	mov	r3,#4
+	mul	r6,r6,r3
+	add	r4,r4,r6
+	;get address of result[i][j];
+	str	r10,[r4]
+	;store x(r10) to result[i][j];
+	mov	r10,#0
+	mov	r9,#0
+	add	r8,r8,#1
+	;reset k(r9) and x(r10), then add 1 to j(r8);
+	b	loop2
+	
+loop1left
+	mov	r8,#0
+	add	r7,r7,#1
+	;reset j(r8)), then add 1 to 1(r7);
+	b	loop1
+	
+finish1
+	mov	r0,#1
+	;return 1;
+	b	finish
+	
+finish2
+	mov r0,#0
+	;return 0;
+	
+finish	
+	pop	{r3-r10,lr}
+
+	BX		LR
+	END
